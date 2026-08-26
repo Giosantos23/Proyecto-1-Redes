@@ -41,17 +41,17 @@ def tool_error(message: str) -> dict[str, Any]:
 def require_string(arguments: dict[str, Any], name: str, max_length: int = 200) -> str:
     value = arguments.get(name)
     if not isinstance(value, str) or not value.strip():
-        raise RPCError(-32602, f"Parameter '{name}' must be a non-empty string")
+        raise RPCError(-32602, f"Parametro '{name}' debe ser string")
     value = value.strip()
     if len(value) > max_length:
-        raise RPCError(-32602, f"Parameter '{name}' exceeds the maximum length")
+        raise RPCError(-32602, f"Parametro '{name}' excede la longitud máxima")
     return value
 
 
 def require_year(arguments: dict[str, Any]) -> int:
     value = arguments.get("year")
     if isinstance(value, bool) or not isinstance(value, int) or not 2000 <= value <= 2100:
-        raise RPCError(-32602, "Parameter 'year' must be an integer between 2000 and 2100")
+        raise RPCError(-32602, "Parametro 'year' debe estar entre 2000 y 2100")
     return value
 
 
@@ -60,14 +60,14 @@ def parse_iso_date(arguments: dict[str, Any], name: str) -> str:
     try:
         date.fromisoformat(value)
     except ValueError as exc:
-        raise RPCError(-32602, f"Parameter '{name}' must use YYYY-MM-DD format") from exc
+        raise RPCError(-32602, f"Parametro '{name}' debe usar el formato YYYY-MM-DD") from exc
     return value
 
 
 TOOLS: list[dict[str, Any]] = [
     {
         "name": "consultar_directorio",
-        "description": "Buscar el directorio de empleados ficticios por nombre, departamento o título de trabajo.",
+        "description": "Buscar el directorio de empleados por nombre, departamento o título de trabajo.",
         "inputSchema": {
             "type": "object",
             "properties": {"query": {"type": "string", "description": "Search text."}},
@@ -133,7 +133,7 @@ def build_handlers(database: HRDatabase) -> dict[str, Callable[[dict[str, Any]],
             raise RPCError(-32602, "'end_date' no puede ser anterior a 'start_date'")
         reason = require_string(arguments, "reason", max_length=300)
         if database.find_employee(employee_id) is None:
-            raise RPCError(-32602, "El empleado no existe en la base de datos ficticia de RR.HH.")
+            raise RPCError(-32602, "El empleado no existe en la base de datos de RR.HH.")
         request = database.create_leave_request(employee_id, start_date, end_date, reason)
         return text_result({"message": "Solicitud de permiso registrada", "request": request})
 
@@ -174,7 +174,7 @@ def dispatch(request: dict[str, Any], database: HRDatabase) -> dict[str, Any] | 
                 "protocolVersion": negotiated,
                 "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
-                "instructions": "Usa las herramientas de RR.HH. solo con registros ficticios de empleados.",
+                "instructions": "Usa las herramientas de RR.HH. solo con registros de empleados.",
             },
         )
     if method == "tools/list":
@@ -184,9 +184,9 @@ def dispatch(request: dict[str, Any], database: HRDatabase) -> dict[str, Any] | 
         name = params.get("name")
         arguments = params.get("arguments") or {}
         if name not in HANDLERS:
-            raise RPCError(-32602, f"Unknown tool: {name}")
+            raise RPCError(-32602, f"Herramienta desconocida: {name}")
         if not isinstance(arguments, dict):
-            raise RPCError(-32602, "Tool arguments must be an object")
+            raise RPCError(-32602, "Los argumentos de la herramienta deben ser un objeto")
         try:
             return response(request_id, HANDLERS[name](arguments))
         except RPCError as exc:

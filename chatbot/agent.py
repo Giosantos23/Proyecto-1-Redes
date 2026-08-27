@@ -137,18 +137,19 @@ class ChatbotAgent:
                 name = function_call.name
                 arguments = dict(function_call.args or {})
                 result_text, is_error = self.router.call(name, arguments)
-                response_payload = {"error": result_text} if is_error else {"result": result_text}
+                response_payload = {"error": result_text} if is_error else {"output": result_text}
+                function_response = self._types.FunctionResponse(
+                    name=name,
+                    response=response_payload,
+                    id=getattr(function_call, "id", None),
+                )
                 function_response_parts.append(
-                    self._types.Part.from_function_response(
-                        name=name,
-                        response=response_payload,
-                        id=getattr(function_call, "id", None),
-                    )
+                    self._types.Part(function_response=function_response)
                 )
             self.contents.append(
                 self._types.Content(role="user", parts=function_response_parts)
             )
-        raise RuntimeError("Se excedieron los intentos de generación de contenido sin obtener una respuesta final del modelo.")
+        raise RuntimeError("Gemini excedio el número máximo de rondas de llamadas a funciones")
 
     def _generation_config(self) -> Any:
         function_declarations = self._types.Tool(

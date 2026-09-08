@@ -7,6 +7,7 @@ from typing import Any
 
 from .audit_log import AuditLog
 from .mcp_client import MCPClient
+from .mcp_sse_client import MCPSSEClient
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -29,15 +30,26 @@ class LocalMCPBundle:
     def start(self) -> None:
         if self.clients:
             return
-        self.clients.append(
-            MCPClient(
-                [sys.executable, "server.py"],
-                cwd=HR_SERVER_DIR,
-                environment=os.environ.copy(),
-                server_name="hr-local-server",
-                log_event=self._log,
+        
+        remote_url = os.getenv("HR_REMOTE_URL")
+        if remote_url:
+            self.clients.append(
+                MCPSSEClient(
+                    remote_url,
+                    server_name="hr-remote-server",
+                    log_event=self._log,
+                )
             )
-        )
+        else:
+            self.clients.append(
+                MCPClient(
+                    [sys.executable, "server.py"],
+                    cwd=HR_SERVER_DIR,
+                    environment=os.environ.copy(),
+                    server_name="hr-local-server",
+                    log_event=self._log,
+                )
+            )
         try:
             for client in self.clients:
                 client.start()

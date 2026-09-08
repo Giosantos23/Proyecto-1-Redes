@@ -2,34 +2,29 @@ import asyncio
 import json
 import logging
 import uuid
+import sys
+import os
+from pathlib import Path
 from typing import Any, AsyncGenerator
 
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-try:
-    from .server import (
-        DATABASE,
-        HANDLERS,
-        PROTOCOL_VERSION,
-        SERVER_NAME,
-        SERVER_VERSION,
-        RPCError,
-        dispatch,
-        error_response,
-    )
-except ImportError:
-    from server import (
-        DATABASE,
-        HANDLERS,
-        PROTOCOL_VERSION,
-        SERVER_NAME,
-        SERVER_VERSION,
-        RPCError,
-        dispatch,
-        error_response,
-    )
+current_dir = Path(__file__).parent.resolve()
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
+
+from server import (
+    DATABASE,
+    HANDLERS,
+    PROTOCOL_VERSION,
+    SERVER_NAME,
+    SERVER_VERSION,
+    RPCError,
+    dispatch,
+    error_response,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(f"{SERVER_NAME}-remote")

@@ -8,16 +8,28 @@ from fastapi import FastAPI, Request, Response, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from server import (
-    DATABASE,
-    HANDLERS,
-    PROTOCOL_VERSION,
-    SERVER_NAME,
-    SERVER_VERSION,
-    RPCError,
-    dispatch,
-    error_response,
-)
+try:
+    from .server import (
+        DATABASE,
+        HANDLERS,
+        PROTOCOL_VERSION,
+        SERVER_NAME,
+        SERVER_VERSION,
+        RPCError,
+        dispatch,
+        error_response,
+    )
+except ImportError:
+    from server import (
+        DATABASE,
+        HANDLERS,
+        PROTOCOL_VERSION,
+        SERVER_NAME,
+        SERVER_VERSION,
+        RPCError,
+        dispatch,
+        error_response,
+    )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(f"{SERVER_NAME}-remote")

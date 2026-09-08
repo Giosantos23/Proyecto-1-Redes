@@ -1,1 +1,1 @@
-web: uvicorn mcp_servers.hr_server.remote_server:app --host 0.0.0.0 --port $PORT
+web: PYTHONPATH=$PYTHONPATH:. uvicorn mcp_servers.hr_server.remote_server:app --host 0.0.0.0 --port $PORT
